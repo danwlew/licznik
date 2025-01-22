@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
-import { Clock } from 'react-feather'; // Ikonka zegara
 
 const App = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -195,7 +194,7 @@ const App = () => {
               disabled={!endTime && !customMinutes}
               className="flex items-center justify-center bg-purple-500 text-black px-6 py-2 rounded-lg hover:bg-purple-400 disabled:opacity-50"
             >
-              <Clock className="mr-2 text-cyan-400" size={18} />
+              <span className="mr-2 text-cyan-400">⏰</span>
               Start Timer
             </button>
           </div>
@@ -214,7 +213,7 @@ const App = () => {
         )}
 
         {showYoutubeVideo && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center">
             <YouTube
               videoId={getYoutubeVideoId(youtubeUrl)}
               opts={{
@@ -226,6 +225,12 @@ const App = () => {
               }}
               onEnd={resetTimer}
             />
+            <button
+              onClick={() => setShowYoutubeVideo(false)}
+              className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400"
+            >
+              Close Video
+            </button>
           </div>
         )}
       </div>
