@@ -14,16 +14,9 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
-  // Presety
-  const presets = [
-    { name: 'Przerwa', minutes: 5 },
-    { name: 'Przerwa na kawę', minutes: 10 },
-    { name: 'Start Zajęć', minutes: 15 },
-    { name: 'Przerwa techniczna', minutes: 20 },
-  ];
-
-  // Dodatkowe opcje czasu
-  const additionalMinutes = [25, 30, 35, 40, 45, 50, 55, 60];
+  // Presety dla tekstu i czasu
+  const textPresets = ['Przerwa', 'Przerwa na kawę', 'Start Zajęć', 'Przerwa techniczna'];
+  const timePresets = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
 
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
@@ -126,8 +119,11 @@ const App = () => {
     setIsEditingName(true);
   };
 
-  const handlePresetSelect = (name: string, minutes: number) => {
-    setAppName(name);
+  const handleTextPresetSelect = (text: string) => {
+    setAppName(text);
+  };
+
+  const handleTimePresetSelect = (minutes: number) => {
     setCustomMinutes(minutes.toString());
     setEndTime('');
   };
@@ -158,39 +154,32 @@ const App = () => {
         {!isRunning && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Presets</label>
+              <label className="block text-sm mb-1">Text Presets</label>
               <select
-                onChange={(e) => {
-                  const [name, minutes] = e.target.value.split('|');
-                  handlePresetSelect(name, parseInt(minutes));
-                }}
+                onChange={(e) => handleTextPresetSelect(e.target.value)}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
               >
-                <option value="">Select Preset</option>
-                {presets.map((preset) => (
-                  <option key={preset.name} value={`${preset.name}|${preset.minutes}`}>
-                    {preset.name} - {preset.minutes} min
-                  </option>
-                ))}
-                {additionalMinutes.map((minutes) => (
-                  <option key={minutes} value={`Custom|${minutes}`}>
-                    Custom - {minutes} min
+                <option value="">Select Text Preset</option>
+                {textPresets.map((preset, index) => (
+                  <option key={index} value={preset}>
+                    {preset}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm mb-1">Or set duration (minutes)</label>
-              <input
-                type="number"
-                value={customMinutes}
-                onChange={(e) => {
-                  setCustomMinutes(e.target.value);
-                  setEndTime('');
-                }}
-                placeholder="Enter minutes"
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-              />
+              <label className="block text-sm mb-1">Time Presets</label>
+              <select
+                onChange={(e) => handleTimePresetSelect(parseInt(e.target.value, 10))}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
+              >
+                <option value="">Select Time Preset</option>
+                {timePresets.map((minutes, index) => (
+                  <option key={index} value={minutes}>
+                    {minutes} min
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm mb-1">YouTube Video URL</label>
