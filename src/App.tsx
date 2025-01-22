@@ -4,6 +4,7 @@ import ReactCanvasConfetti from 'react-canvas-confetti';
 function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [endTime, setEndTime] = useState<string>(''); // Godzina zakończenia (HH:mm)
+  const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
   const [showFireworks, setShowFireworks] = useState(false);
   const audioElement = useRef<HTMLAudioElement | null>(null);
@@ -75,18 +76,24 @@ function App() {
 
     if (isRunning) {
       interval = setInterval(() => {
-        const remainingTime = calculateTimeLeft(endTime);
+        const remainingTime = endTime
+          ? calculateTimeLeft(endTime)
+          : { minutes: timeLeft.minutes, seconds: timeLeft.seconds - 1 };
 
         if (remainingTime.minutes <= 0 && remainingTime.seconds <= 0) {
           handleTimerEnd();
         } else {
+          if (remainingTime.seconds < 0) {
+            remainingTime.minutes -= 1;
+            remainingTime.seconds = 59;
+          }
           setTimeLeft(remainingTime);
         }
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, endTime]);
+  }, [isRunning, endTime, timeLeft]);
 
   // Inicjalizacja dźwięku
   useEffect(() => {
@@ -108,17 +115,30 @@ function App() {
 
   const startTimer = () => {
     if (endTime) {
-      const remainingTime = calculateTimeLeft(endTime);
-
-      if (remainingTime.minutes > 0 || remainingTime.seconds > 0) {
-        setTimeLeft(remainingTime);
-        setIsRunning(true);
-        setShowFireworks(false);
-        if (audioElement.current) {
-          audioElement.current.pause();
-          audioElement.current.currentTime = 0;
-        }
+      setTimeLeft(calculateTimeLeft(endTime));
+    } else if (customMinutes) {
+      const mins = parseInt(customMinutes, 10);
+      if (!isNaN(mins) && mins > 0) {
+        setTimeLeft({ minutes: mins, seconds: 0 });
       }
+    }
+    setIsRunning(true);
+    setShowFireworks(false);
+    if (audioElement.current) {
+      audioElement.current.pause();
+      audioElement.current.currentTime = 0;
+    }
+  };
+
+  const resetTimer = () => {
+    setIsRunning(false);
+    setEndTime('');
+    setCustomMinutes('');
+    setTimeLeft({ minutes: 0, seconds: 0 });
+    setShowFireworks(false);
+    if (audioElement.current) {
+      audioElement.current.pause();
+      audioElement.current.currentTime = 0;
     }
   };
 
@@ -131,16 +151,34 @@ function App() {
 
         {!isRunning && (
           <div className="space-y-4">
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              placeholder="Set end time"
-              className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-            />
+            <div>
+              <label className="block text-sm mb-1">Set end time (HH:mm)</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => {
+                  setEndTime(e.target.value);
+                  setCustomMinutes('');
+                }}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Or set duration (minutes)</label>
+              <input
+                type="number"
+                value={customMinutes}
+                onChange={(e) => {
+                  setCustomMinutes(e.target.value);
+                  setEndTime('');
+                }}
+                placeholder="Enter minutes"
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+              />
+            </div>
             <button
               onClick={startTimer}
-              disabled={!endTime}
+              disabled={!endTime && !customMinutes}
               className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
             >
               Start Timer
@@ -154,12 +192,9 @@ function App() {
           </div>
         )}
 
-        {showFireworks && (
+        {(isRunning || showFireworks) && (
           <button
-            onClick={() => {
-              setShowFireworks(false);
-              setEndTime('');
-            }}
+            onClick={resetTimer}
             className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400 mt-8"
           >
             Reset
