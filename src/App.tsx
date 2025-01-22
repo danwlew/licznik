@@ -5,7 +5,6 @@ const App = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [endTime, setEndTime] = useState<string>(''); // Godzina zakończenia (HH:mm)
   const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
-  const [manualMinutes, setManualMinutes] = useState<string>(''); // Ręczny czas w minutach
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
   const [youtubeUrl, setYoutubeUrl] = useState<string>('https://youtu.be/dQw4w9WgXcQ'); // Domyślny URL do YouTube
   const [useDefaultSound, setUseDefaultSound] = useState<boolean>(true); // Flaga dla domyślnego dźwięku
@@ -15,13 +14,21 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
+  // Presety
+  const presets = [
+    { name: 'Przerwa', minutes: 5 },
+    { name: 'Przerwa na kawę', minutes: 10 },
+    { name: 'Start Zajęć', minutes: 15 },
+    { name: 'Przerwa techniczna', minutes: 20 },
+  ];
+
+  // Dodatkowe opcje czasu
+  const additionalMinutes = [25, 30, 35, 40, 45, 50, 55, 60];
+
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
     if (useDefaultSound) {
-      audioElement.current?.play().catch((err) => {
-        console.warn('Error playing sound:', err);
-        setShowYoutubeVideo(true); // Jeśli wystąpi problem z dźwiękiem, pokaż YouTube
-      });
+      audioElement.current?.play().catch((err) => console.warn('Error playing sound:', err));
     } else {
       setShowYoutubeVideo(true);
     }
@@ -94,35 +101,35 @@ const App = () => {
   }, []);
 
   const startTimer = () => {
-    let minutes = 0;
-
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
       setAlarmTime(endTime);
     } else if (customMinutes) {
-      minutes = parseInt(customMinutes, 10);
-    } else if (manualMinutes) {
-      minutes = parseInt(manualMinutes, 10);
+      const minutes = parseInt(customMinutes, 10);
+      if (minutes > 0) {
+        setTimeLeft({ minutes, seconds: 0 });
+        setAlarmTime(calculateAlarmTime(minutes));
+      }
     }
-
-    if (minutes > 0) {
-      setTimeLeft({ minutes, seconds: 0 });
-      setAlarmTime(calculateAlarmTime(minutes));
-      setIsRunning(true);
-      setShowYoutubeVideo(false);
-      setIsEditingName(false);
-    }
+    setIsRunning(true);
+    setShowYoutubeVideo(false);
+    setIsEditingName(false);
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setEndTime('');
     setCustomMinutes('');
-    setManualMinutes('');
     setTimeLeft({ minutes: 0, seconds: 0 });
     setShowYoutubeVideo(false);
     setAlarmTime('');
     setIsEditingName(true);
+  };
+
+  const handlePresetSelect = (name: string, minutes: number) => {
+    setAppName(name);
+    setCustomMinutes(minutes.toString());
+    setEndTime('');
   };
 
   // Funkcja do wyciągania ID wideo z URL YouTube
@@ -151,47 +158,56 @@ const App = () => {
         {!isRunning && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Use Default Sound or YouTube Video</label>
-              <button
-                onClick={() => setUseDefaultSound(!useDefaultSound)}
-                className={`px-4 py-2 rounded-lg ${
-                  useDefaultSound ? 'bg-cyan-400' : 'bg-purple-500'
-                } hover:opacity-80`}
+              <label className="block text-sm mb-1">Presets</label>
+              <select
+                onChange={(e) => {
+                  const [name, minutes] = e.target.value.split('|');
+                  handlePresetSelect(name, parseInt(minutes));
+                }}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
               >
-                {useDefaultSound ? 'Default Sound' : 'Custom YouTube Video'}
-              </button>
+                <option value="">Select Preset</option>
+                {presets.map((preset) => (
+                  <option key={preset.name} value={`${preset.name}|${preset.minutes}`}>
+                    {preset.name} - {preset.minutes} min
+                  </option>
+                ))}
+                {additionalMinutes.map((minutes) => (
+                  <option key={minutes} value={`Custom|${minutes}`}>
+                    Custom - {minutes} min
+                  </option>
+                ))}
+              </select>
             </div>
-            {!useDefaultSound && (
-              <div>
-                <label className="block text-sm mb-1">Enter YouTube Video URL</label>
-                <input
-                  type="text"
-                  value={youtubeUrl}
-                  onChange={(e) => setYoutubeUrl(e.target.value)}
-                  placeholder="YouTube URL"
-                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-            )}
             <div>
-              <label className="block text-sm mb-1">Enter Manual Duration (minutes)</label>
+              <label className="block text-sm mb-1">Or set duration (minutes)</label>
               <input
                 type="number"
-                value={manualMinutes}
+                value={customMinutes}
                 onChange={(e) => {
-                  setManualMinutes(e.target.value);
-                  setCustomMinutes('');
+                  setCustomMinutes(e.target.value);
                   setEndTime('');
                 }}
                 placeholder="Enter minutes"
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
               />
             </div>
+            <div>
+              <label className="block text-sm mb-1">YouTube Video URL</label>
+              <input
+                type="text"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="Enter YouTube video URL"
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+              />
+            </div>
             <button
               onClick={startTimer}
-              disabled={!endTime && !customMinutes && !manualMinutes}
-              className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
+              disabled={!endTime && !customMinutes}
+              className="flex items-center justify-center bg-purple-500 text-black px-6 py-2 rounded-lg hover:bg-purple-400 disabled:opacity-50"
             >
+              <span className="mr-2 text-cyan-400">⏰</span>
               Start Timer
             </button>
           </div>
