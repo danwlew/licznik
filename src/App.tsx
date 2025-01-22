@@ -14,6 +14,17 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
+  // Presety
+  const presets = [
+    { name: 'Przerwa', minutes: 5 },
+    { name: 'Przerwa na kawę', minutes: 10 },
+    { name: 'Start Zajęć', minutes: 15 },
+    { name: 'Przerwa techniczna', minutes: 20 },
+  ];
+
+  // Dodatkowe opcje czasu
+  const additionalMinutes = [25, 30, 35, 40, 45, 50, 55, 60];
+
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
     if (useDefaultSound) {
@@ -115,6 +126,12 @@ const App = () => {
     setIsEditingName(true);
   };
 
+  const handlePresetSelect = (name: string, minutes: number) => {
+    setAppName(name);
+    setCustomMinutes(minutes.toString());
+    setEndTime('');
+  };
+
   // Funkcja do wyciągania ID wideo z URL YouTube
   const getYoutubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -141,16 +158,26 @@ const App = () => {
         {!isRunning && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Set end time (HH:mm)</label>
-              <input
-                type="time"
-                value={endTime}
+              <label className="block text-sm mb-1">Presets</label>
+              <select
                 onChange={(e) => {
-                  setEndTime(e.target.value);
-                  setCustomMinutes('');
+                  const [name, minutes] = e.target.value.split('|');
+                  handlePresetSelect(name, parseInt(minutes));
                 }}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-              />
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
+              >
+                <option value="">Select Preset</option>
+                {presets.map((preset) => (
+                  <option key={preset.name} value={`${preset.name}|${preset.minutes}`}>
+                    {preset.name} - {preset.minutes} min
+                  </option>
+                ))}
+                {additionalMinutes.map((minutes) => (
+                  <option key={minutes} value={`Custom|${minutes}`}>
+                    Custom - {minutes} min
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm mb-1">Or set duration (minutes)</label>
@@ -165,30 +192,6 @@ const App = () => {
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
               />
             </div>
-            <div>
-              <label className="block text-sm mb-1">Use default sound or YouTube</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useDefaultSound}
-                  onChange={(e) => setUseDefaultSound(e.target.checked)}
-                  className="w-4 h-4 text-cyan-400 focus:ring-cyan-500 rounded"
-                />
-                <span>{useDefaultSound ? 'Default Sound' : 'YouTube Video'}</span>
-              </div>
-            </div>
-            {!useDefaultSound && (
-              <div>
-                <label className="block text-sm mb-1">YouTube Video URL</label>
-                <input
-                  type="text"
-                  value={youtubeUrl}
-                  onChange={(e) => setYoutubeUrl(e.target.value)}
-                  placeholder="Enter YouTube video URL"
-                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-            )}
             <button
               onClick={startTimer}
               disabled={!endTime && !customMinutes}
