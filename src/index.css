@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black;
+  }
+}
+
+@keyframes textShadowPulse {
+  0% {
+    text-shadow: 0 0 4px #22d3ee, 0 0 11px #22d3ee, 0 0 19px #22d3ee;
+  }
+  50% {
+    text-shadow: 0 0 4px #ec4899, 0 0 11px #ec4899, 0 0 19px #ec4899;
+  }
+  100% {
+    text-shadow: 0 0 4px #22d3ee, 0 0 11px #22d3ee, 0 0 19px #22d3ee;
+  }
+}
