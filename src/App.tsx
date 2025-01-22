@@ -15,14 +15,13 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
-  // Presety
-  const namePresets = ['Przerwa', 'Przerwa na kawę', 'Przerwa obiadowa', 'Start Zajęć', 'Przerwa techniczna'];
-  const timePresets = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
-
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
     if (useDefaultSound) {
-      audioElement.current?.play().catch((err) => console.warn('Error playing sound:', err));
+      audioElement.current?.play().catch((err) => {
+        console.warn('Error playing sound:', err);
+        setShowYoutubeVideo(true); // Jeśli wystąpi problem z dźwiękiem, pokaż YouTube
+      });
     } else {
       setShowYoutubeVideo(true);
     }
@@ -152,37 +151,28 @@ const App = () => {
         {!isRunning && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Select Name Preset</label>
-              <select
-                onChange={(e) => setAppName(e.target.value)}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
+              <label className="block text-sm mb-1">Use Default Sound or YouTube Video</label>
+              <button
+                onClick={() => setUseDefaultSound(!useDefaultSound)}
+                className={`px-4 py-2 rounded-lg ${
+                  useDefaultSound ? 'bg-cyan-400' : 'bg-purple-500'
+                } hover:opacity-80`}
               >
-                <option value="">Select a name</option>
-                {namePresets.map((preset) => (
-                  <option key={preset} value={preset}>
-                    {preset}
-                  </option>
-                ))}
-              </select>
+                {useDefaultSound ? 'Default Sound' : 'Custom YouTube Video'}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm mb-1">Select Time Preset (minutes)</label>
-              <select
-                onChange={(e) => {
-                  setCustomMinutes(e.target.value);
-                  setEndTime('');
-                  setManualMinutes('');
-                }}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 focus:outline-none focus:border-purple-500"
-              >
-                <option value="">Select a duration</option>
-                {timePresets.map((minutes) => (
-                  <option key={minutes} value={minutes}>
-                    {minutes} min
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!useDefaultSound && (
+              <div>
+                <label className="block text-sm mb-1">Enter YouTube Video URL</label>
+                <input
+                  type="text"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="YouTube URL"
+                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm mb-1">Enter Manual Duration (minutes)</label>
               <input
@@ -194,19 +184,6 @@ const App = () => {
                   setEndTime('');
                 }}
                 placeholder="Enter minutes"
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Or set custom end time (HH:mm)</label>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => {
-                  setEndTime(e.target.value);
-                  setCustomMinutes('');
-                  setManualMinutes('');
-                }}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
               />
             </div>
