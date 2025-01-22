@@ -8,9 +8,11 @@ function App() {
   const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
   const [showFireworks, setShowFireworks] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState<string>(''); // URL do wideo YouTube
+  const [youtubeUrl, setYoutubeUrl] = useState<string>('https://youtu.be/dQw4w9WgXcQ'); // Domyślny URL do YouTube
+  const [useDefaultSound, setUseDefaultSound] = useState<boolean>(true); // Flaga dla domyślnego dźwięku
   const [showYoutubeVideo, setShowYoutubeVideo] = useState(false); // Flaga do pokazywania wideo
   const [appName, setAppName] = useState<string>('Cyberpunk Timer'); // Nazwa aplikacji
+  const [isEditingName, setIsEditingName] = useState<boolean>(true); // Flaga do edycji nazwy
   const audioElement = useRef<HTMLAudioElement | null>(null);
   const confettiInstance = useRef<any>(null);
 
@@ -39,9 +41,15 @@ function App() {
     }
   };
 
-  // Odtwarzanie alarmu YouTube
-  const playYoutubeAlarm = () => {
-    if (youtubeUrl) {
+  // Odtwarzanie alarmu
+  const playAlarm = () => {
+    if (useDefaultSound) {
+      if (audioElement.current) {
+        audioElement.current
+          .play()
+          .catch((err) => console.warn('Autoplay blocked or error in playing sound:', err));
+      }
+    } else {
       setShowYoutubeVideo(true);
     }
   };
@@ -50,7 +58,7 @@ function App() {
   const handleTimerEnd = () => {
     setIsRunning(false);
     setShowFireworks(true);
-    playYoutubeAlarm();
+    playAlarm();
   };
 
   // Obliczanie pozostałego czasu
@@ -97,6 +105,23 @@ function App() {
     return () => clearInterval(interval);
   }, [isRunning, endTime, timeLeft]);
 
+  // Inicjalizacja domyślnego dźwięku
+  useEffect(() => {
+    audioElement.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    return () => {
+      if (audioElement.current) {
+        audioElement.current.pause();
+        audioElement.current.currentTime = 0;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (showFireworks) {
+      startFireworks();
+    }
+  }, [showFireworks]);
+
   const startTimer = () => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
@@ -109,6 +134,7 @@ function App() {
     setIsRunning(true);
     setShowFireworks(false);
     setShowYoutubeVideo(false);
+    setIsEditingName(false);
   };
 
   const resetTimer = () => {
@@ -118,6 +144,7 @@ function App() {
     setTimeLeft({ minutes: 0, seconds: 0 });
     setShowFireworks(false);
     setShowYoutubeVideo(false);
+    setIsEditingName(true);
   };
 
   const getYoutubeVideoId = (url: string) => {
@@ -129,13 +156,15 @@ function App() {
   return (
     <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-4">
       <div className="text-center">
-        <input
-          type="text"
-          value={appName}
-          onChange={(e) => setAppName(e.target.value)}
-          placeholder="Enter app name"
-          className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
-        />
+        {isEditingName && (
+          <input
+            type="text"
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+            placeholder="Enter app name"
+            className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
+          />
+        )}
         <h1 className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text">
           {appName}
         </h1>
@@ -168,15 +197,29 @@ function App() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">YouTube Video URL</label>
-              <input
-                type="text"
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-                placeholder="Enter YouTube video URL"
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-              />
+              <label className="block text-sm mb-1">Use default sound or YouTube</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={useDefaultSound}
+                  onChange={(e) => setUseDefaultSound(e.target.checked)}
+                  className="w-4 h-4 text-cyan-400 focus:ring-cyan-500 rounded"
+                />
+                <span>{useDefaultSound ? 'Default Sound' : 'YouTube Video'}</span>
+              </div>
             </div>
+            {!useDefaultSound && (
+              <div>
+                <label className="block text-sm mb-1">YouTube Video URL</label>
+                <input
+                  type="text"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="Enter YouTube video URL"
+                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            )}
             <button
               onClick={startTimer}
               disabled={!endTime && !customMinutes}
