@@ -13,6 +13,7 @@ function App() {
   const [showYoutubeVideo, setShowYoutubeVideo] = useState(false); // Flaga do pokazywania wideo
   const [appName, setAppName] = useState<string>('Cyberpunk Timer'); // Nazwa aplikacji
   const [isEditingName, setIsEditingName] = useState<boolean>(true); // Flaga do edycji nazwy
+  const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
   const confettiInstance = useRef<any>(null);
 
@@ -80,6 +81,13 @@ function App() {
     return { minutes, seconds };
   };
 
+  const calculateAlarmTime = (durationMinutes: number) => {
+    const now = new Date();
+    const alarm = new Date(now.getTime() + durationMinutes * 60 * 1000);
+
+    return alarm.toTimeString().slice(0, 5); // Zwraca "HH:mm"
+  };
+
   // Obsługa odliczania
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -125,10 +133,12 @@ function App() {
   const startTimer = () => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
+      setAlarmTime(endTime); // Ustaw alarm na podany czas
     } else if (customMinutes) {
       const mins = parseInt(customMinutes, 10);
       if (!isNaN(mins) && mins > 0) {
         setTimeLeft({ minutes: mins, seconds: 0 });
+        setAlarmTime(calculateAlarmTime(mins)); // Oblicz rzeczywisty czas końca
       }
     }
     setIsRunning(true);
@@ -144,6 +154,7 @@ function App() {
     setTimeLeft({ minutes: 0, seconds: 0 });
     setShowFireworks(false);
     setShowYoutubeVideo(false);
+    setAlarmTime('');
     setIsEditingName(true);
   };
 
@@ -236,17 +247,14 @@ function App() {
           </div>
         )}
 
-        {(isRunning || showFireworks) && (
-          <button
-            onClick={resetTimer}
-            className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400 mt-8"
-          >
-            Reset
-          </button>
+        {isRunning && alarmTime && (
+          <p className="mt-4 text-lg">
+            Alarm set to: <span className="font-bold">{alarmTime}</span>
+          </p>
         )}
 
         {showYoutubeVideo && (
-          <div className="mt-8">
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center">
             <YouTube
               videoId={getYoutubeVideoId(youtubeUrl)}
               opts={{
@@ -256,22 +264,26 @@ function App() {
                   autoplay: 1,
                 },
               }}
+              onEnd={resetTimer}
             />
           </div>
         )}
-      </div>
 
-      <ReactCanvasConfetti
-        refConfetti={(instance) => (confettiInstance.current = instance)}
-        style={{
-          position: 'fixed',
-          pointerEvents: 'none',
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-        }}
-      />
+        <ReactCanvasConfetti
+          refConfetti={(instance) => (confettiInstance.current = instance)}
+          style={{
+            position: 'fixed',
+            pointerEvents: 'none',
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
+      <footer className="mt-8 text-sm text-cyan-400">
+        This app does not store cookies or any data on your device.
+      </footer>
     </div>
   );
 }
