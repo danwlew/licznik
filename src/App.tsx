@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ReactCanvasConfetti from 'react-canvas-confetti';
 import YouTube from 'react-youtube';
+import { Clock } from 'react-feather'; // Ikonka zegara
 
-// Komponent aplikacji
 const App = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [endTime, setEndTime] = useState<string>(''); // Godzina zakończenia (HH:mm)
   const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
-  const [showFireworks, setShowFireworks] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState<string>('https://youtu.be/dQw4w9WgXcQ'); // Domyślny URL do YouTube
   const [useDefaultSound, setUseDefaultSound] = useState<boolean>(true); // Flaga dla domyślnego dźwięku
   const [showYoutubeVideo, setShowYoutubeVideo] = useState(false); // Flaga do pokazywania wideo
@@ -16,32 +14,6 @@ const App = () => {
   const [isEditingName, setIsEditingName] = useState<boolean>(true); // Flaga do edycji nazwy
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
   const audioElement = useRef<HTMLAudioElement | null>(null);
-  const confettiInstance = useRef<any>(null);
-
-  // Funkcja do uruchamiania fajerwerków
-  const triggerFireworks = () => {
-    if (!confettiInstance.current) return;
-
-    const duration = 5; // czas trwania fajerwerków w sekundach
-    const interval = 300; // co ile ms uruchamiamy efekt
-    const animationEnd = Date.now() + duration * 1000;
-
-    const fire = () => {
-      confettiInstance.current({
-        particleCount: 5,
-        startVelocity: 30,
-        spread: 360,
-        origin: { x: Math.random(), y: Math.random() - 0.2 },
-        colors: ['#22d3ee', '#ec4899', '#8b5cf6'],
-      });
-
-      if (Date.now() < animationEnd) {
-        setTimeout(fire, interval);
-      }
-    };
-
-    fire();
-  };
 
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
@@ -55,7 +27,6 @@ const App = () => {
   // Funkcja do obsługi zakończenia odliczania
   const handleTimerEnd = () => {
     setIsRunning(false);
-    setShowFireworks(true);
     playAlarm();
   };
 
@@ -119,13 +90,6 @@ const App = () => {
     };
   }, []);
 
-  // Wyzwalanie fajerwerków
-  useEffect(() => {
-    if (showFireworks) {
-      triggerFireworks();
-    }
-  }, [showFireworks]);
-
   const startTimer = () => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
@@ -138,7 +102,6 @@ const App = () => {
       }
     }
     setIsRunning(true);
-    setShowFireworks(false);
     setShowYoutubeVideo(false);
     setIsEditingName(false);
   };
@@ -148,7 +111,6 @@ const App = () => {
     setEndTime('');
     setCustomMinutes('');
     setTimeLeft({ minutes: 0, seconds: 0 });
-    setShowFireworks(false);
     setShowYoutubeVideo(false);
     setAlarmTime('');
     setIsEditingName(true);
@@ -231,8 +193,9 @@ const App = () => {
             <button
               onClick={startTimer}
               disabled={!endTime && !customMinutes}
-              className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
+              className="flex items-center justify-center bg-purple-500 text-black px-6 py-2 rounded-lg hover:bg-purple-400 disabled:opacity-50"
             >
+              <Clock className="mr-2 text-cyan-400" size={18} />
               Start Timer
             </button>
           </div>
@@ -271,18 +234,6 @@ const App = () => {
             </button>
           </div>
         )}
-
-        <ReactCanvasConfetti
-          refConfetti={(instance) => (confettiInstance.current = instance)}
-          style={{
-            position: 'fixed',
-            pointerEvents: 'none',
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-          }}
-        />
       </div>
       <footer className="mt-8 text-sm text-cyan-400">
         This app does not store cookies or any data on your device.
