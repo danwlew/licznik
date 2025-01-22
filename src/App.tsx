@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import YouTube from 'react-youtube';
 
-function App() {
+// Komponent aplikacji
+const App = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [endTime, setEndTime] = useState<string>(''); // Godzina zakończenia (HH:mm)
   const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
@@ -17,52 +18,48 @@ function App() {
   const audioElement = useRef<HTMLAudioElement | null>(null);
   const confettiInstance = useRef<any>(null);
 
-  // Uruchamianie fajerwerków
-  const startFireworks = () => {
-    if (confettiInstance.current) {
-      const duration = 5; // czas trwania fajerwerków w sekundach
-      const interval = 300; // co ile ms uruchamiamy efekt
-      const animationEnd = Date.now() + duration * 1000;
+  // Funkcja do uruchamiania fajerwerków
+  const triggerFireworks = () => {
+    if (!confettiInstance.current) return;
 
-      const fire = () => {
-        confettiInstance.current({
-          particleCount: 5,
-          startVelocity: 30,
-          spread: 360,
-          origin: { x: Math.random(), y: Math.random() - 0.2 },
-          colors: ['#22d3ee', '#ec4899', '#8b5cf6'],
-        });
+    const duration = 5; // czas trwania fajerwerków w sekundach
+    const interval = 300; // co ile ms uruchamiamy efekt
+    const animationEnd = Date.now() + duration * 1000;
 
-        if (Date.now() < animationEnd) {
-          setTimeout(fire, interval);
-        }
-      };
+    const fire = () => {
+      confettiInstance.current({
+        particleCount: 5,
+        startVelocity: 30,
+        spread: 360,
+        origin: { x: Math.random(), y: Math.random() - 0.2 },
+        colors: ['#22d3ee', '#ec4899', '#8b5cf6'],
+      });
 
-      fire();
-    }
+      if (Date.now() < animationEnd) {
+        setTimeout(fire, interval);
+      }
+    };
+
+    fire();
   };
 
-  // Odtwarzanie alarmu
+  // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
     if (useDefaultSound) {
-      if (audioElement.current) {
-        audioElement.current
-          .play()
-          .catch((err) => console.warn('Autoplay blocked or error in playing sound:', err));
-      }
+      audioElement.current?.play().catch((err) => console.warn('Error playing sound:', err));
     } else {
       setShowYoutubeVideo(true);
     }
   };
 
-  // Zakończenie odliczania
+  // Funkcja do obsługi zakończenia odliczania
   const handleTimerEnd = () => {
     setIsRunning(false);
     setShowFireworks(true);
     playAlarm();
   };
 
-  // Obliczanie pozostałego czasu
+  // Funkcja obliczająca pozostały czas
   const calculateTimeLeft = (end: string) => {
     const [endHours, endMinutes] = end.split(':').map(Number);
     const now = new Date();
@@ -75,45 +72,43 @@ function App() {
     }
 
     const diff = endTime.getTime() - now.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { minutes, seconds };
+    return {
+      minutes: Math.floor(diff / (1000 * 60)),
+      seconds: Math.floor((diff % (1000 * 60)) / 1000),
+    };
   };
 
+  // Funkcja obliczająca godzinę alarmu dla niestandardowych minut
   const calculateAlarmTime = (durationMinutes: number) => {
     const now = new Date();
     const alarm = new Date(now.getTime() + durationMinutes * 60 * 1000);
-
     return alarm.toTimeString().slice(0, 5); // Zwraca "HH:mm"
   };
 
-  // Obsługa odliczania
+  // Obsługa logiki odliczania
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    if (!isRunning) return;
 
-    if (isRunning) {
-      interval = setInterval(() => {
-        const remainingTime = endTime
-          ? calculateTimeLeft(endTime)
-          : { minutes: timeLeft.minutes, seconds: timeLeft.seconds - 1 };
+    const interval = setInterval(() => {
+      const remainingTime = endTime
+        ? calculateTimeLeft(endTime)
+        : { minutes: timeLeft.minutes, seconds: timeLeft.seconds - 1 };
 
-        if (remainingTime.minutes <= 0 && remainingTime.seconds <= 0) {
-          handleTimerEnd();
-        } else {
-          if (remainingTime.seconds < 0) {
-            remainingTime.minutes -= 1;
-            remainingTime.seconds = 59;
-          }
-          setTimeLeft(remainingTime);
+      if (remainingTime.minutes <= 0 && remainingTime.seconds <= 0) {
+        handleTimerEnd();
+      } else {
+        if (remainingTime.seconds < 0) {
+          remainingTime.minutes -= 1;
+          remainingTime.seconds = 59;
         }
-      }, 1000);
-    }
+        setTimeLeft(remainingTime);
+      }
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [isRunning, endTime, timeLeft]);
 
-  // Inicjalizacja domyślnego dźwięku
+  // Inicjalizacja dźwięku
   useEffect(() => {
     audioElement.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     return () => {
@@ -124,21 +119,22 @@ function App() {
     };
   }, []);
 
+  // Wyzwalanie fajerwerków
   useEffect(() => {
     if (showFireworks) {
-      startFireworks();
+      triggerFireworks();
     }
   }, [showFireworks]);
 
   const startTimer = () => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
-      setAlarmTime(endTime); // Ustaw alarm na podany czas
+      setAlarmTime(endTime);
     } else if (customMinutes) {
-      const mins = parseInt(customMinutes, 10);
-      if (!isNaN(mins) && mins > 0) {
-        setTimeLeft({ minutes: mins, seconds: 0 });
-        setAlarmTime(calculateAlarmTime(mins)); // Oblicz rzeczywisty czas końca
+      const minutes = parseInt(customMinutes, 10);
+      if (minutes > 0) {
+        setTimeLeft({ minutes, seconds: 0 });
+        setAlarmTime(calculateAlarmTime(minutes));
       }
     }
     setIsRunning(true);
@@ -158,6 +154,7 @@ function App() {
     setIsEditingName(true);
   };
 
+  // Funkcja do wyciągania ID wideo z URL YouTube
   const getYoutubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
@@ -286,6 +283,6 @@ function App() {
       </footer>
     </div>
   );
-}
+};
 
 export default App;
