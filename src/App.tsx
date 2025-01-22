@@ -213,7 +213,7 @@ const App = () => {
         )}
 
         {showYoutubeVideo && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center">
             <YouTube
               videoId={getYoutubeVideoId(youtubeUrl)}
               opts={{
@@ -225,12 +225,6 @@ const App = () => {
               }}
               onEnd={resetTimer}
             />
-            <button
-              onClick={() => setShowYoutubeVideo(false)}
-              className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400"
-            >
-              Close Video
-            </button>
           </div>
         )}
       </div>
