@@ -171,6 +171,7 @@ const App = () => {
             onChange={(e) => setAppName(e.target.value)}
             placeholder="Enter app name"
             className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
+            style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
           />
         )}
         <h1 className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text">
@@ -189,6 +190,7 @@ const App = () => {
                   setCustomMinutes('');
                 }}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
               />
             </div>
             <div>
@@ -202,6 +204,7 @@ const App = () => {
                 }}
                 placeholder="Enter minutes"
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
               />
             </div>
             <div>
@@ -225,6 +228,7 @@ const App = () => {
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   placeholder="Enter YouTube video URL"
                   className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                  style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
                 />
               </div>
             )}
@@ -234,6 +238,12 @@ const App = () => {
               className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
             >
               Start Timer
+            </button>
+            <button
+              onClick={resetTimer}
+              className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400"
+            >
+              Reset
             </button>
           </div>
         )}
@@ -284,6 +294,14 @@ const App = () => {
           }}
         />
       </div>
+      {isRunning && (
+        <button
+          onClick={resetTimer}
+          className="mt-8 bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400"
+        >
+          Reset
+        </button>
+      )}
       <footer className="mt-8 text-sm text-cyan-400">
         This app does not store cookies or any data on your device.
       </footer>
