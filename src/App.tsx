@@ -194,17 +194,14 @@ const App = () => {
                 style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
               />
             </div>
-            <div>
+            <div className="flex items-center justify-center gap-2">
               <label className="block text-sm mb-1">{texts.useDefaultSoundLabel}</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useDefaultSound}
-                  onChange={(e) => setUseDefaultSound(e.target.checked)}
-                  className="w-4 h-4 text-cyan-400 focus:ring-cyan-500 rounded"
-                />
-                <span>{useDefaultSound ? texts.defaultSound : texts.youtubeVideo}</span>
-              </div>
+              <input
+                type="checkbox"
+                checked={useDefaultSound}
+                onChange={(e) => setUseDefaultSound(e.target.checked)}
+                className="w-4 h-4 text-cyan-400 focus:ring-cyan-500 rounded"
+              />
             </div>
             {!useDefaultSound && (
               <div>
@@ -229,17 +226,6 @@ const App = () => {
             >
               {texts.startTimer}
             </button>
-            <div className="mt-4"> {/* Dodano odstęp między przyciskami */}
-              <button
-                onClick={resetTimer}
-                className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
-                style={{
-                  boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
-                }}
-              >
-                {texts.reset}
-              </button>
-            </div>
           </div>
         )}
 
@@ -284,7 +270,7 @@ const App = () => {
       </div>
 
       {/* Przyciski w lewym dolnym rogu */}
-      <div className="fixed bottom-4 left-4 flex gap-2">
+      <div className="fixed bottom-4 left-4 right-4 flex justify-between">
         <button
           onClick={resetTimer}
           className="bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
