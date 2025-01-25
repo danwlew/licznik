@@ -17,7 +17,9 @@ const TEXTS = {
     noCookies: 'This app stores some data locally to remember your preferences.',
     advanced: 'Advanced',
     themes: 'Themes',
-    history: 'YouTube History',
+    history: 'History',
+    timerHistory: 'Timer History',
+    nameHistory: 'Name History',
   },
   pl: {
     appNamePlaceholder: 'Wpisz nazwę aplikacji',
@@ -34,7 +36,9 @@ const TEXTS = {
     noCookies: 'Ta aplikacja przechowuje niektóre dane lokalnie, aby zapamiętać Twoje preferencje.',
     advanced: 'Zaawansowane',
     themes: 'Motywy',
-    history: 'Historia YouTube',
+    history: 'Historia',
+    timerHistory: 'Historia Liczników',
+    nameHistory: 'Historia Nazw',
   },
 };
 
@@ -98,13 +102,15 @@ const App = () => {
   const [youtubeUrl, setYoutubeUrl] = useState('https://youtu.be/dQw4w9WgXcQ');
   const [useDefaultSound, setUseDefaultSound] = useState(true);
   const [showYoutubeVideo, setShowYoutubeVideo] = useState(false);
-  const [appName, setAppName] = useState('Cyberpunk Timer');
+  const [appName, setAppName] = useState('Synthwave Timer');
   const [isEditingName, setIsEditingName] = useState(true);
   const [alarmTime, setAlarmTime] = useState('');
   const [isEnglish, setIsEnglish] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [youtubeHistory, setYoutubeHistory] = useState([]);
+  const [timerHistory, setTimerHistory] = useState([]);
+  const [nameHistory, setNameHistory] = useState([]);
   const audioElement = useRef(null);
 
   const texts = TEXTS[isEnglish ? 'en' : 'pl'];
@@ -117,6 +123,8 @@ const App = () => {
     const savedIsEnglish = localStorage.getItem('isEnglish');
     const savedTheme = localStorage.getItem('theme');
     const savedYoutubeHistory = localStorage.getItem('youtubeHistory');
+    const savedTimerHistory = localStorage.getItem('timerHistory');
+    const savedNameHistory = localStorage.getItem('nameHistory');
 
     if (savedAppName) setAppName(savedAppName);
     if (savedYoutubeUrl) setYoutubeUrl(savedYoutubeUrl);
@@ -124,6 +132,8 @@ const App = () => {
     if (savedIsEnglish) setIsEnglish(savedIsEnglish === 'true');
     if (savedTheme) setTheme(savedTheme);
     if (savedYoutubeHistory) setYoutubeHistory(JSON.parse(savedYoutubeHistory));
+    if (savedTimerHistory) setTimerHistory(JSON.parse(savedTimerHistory));
+    if (savedNameHistory) setNameHistory(JSON.parse(savedNameHistory));
   }, []);
 
   useEffect(() => {
@@ -150,10 +160,30 @@ const App = () => {
     localStorage.setItem('youtubeHistory', JSON.stringify(youtubeHistory));
   }, [youtubeHistory]);
 
+  useEffect(() => {
+    localStorage.setItem('timerHistory', JSON.stringify(timerHistory));
+  }, [timerHistory]);
+
+  useEffect(() => {
+    localStorage.setItem('nameHistory', JSON.stringify(nameHistory));
+  }, [nameHistory]);
+
   // Dodaj URL YouTube do historii (bez powtórzeń)
   const addToYoutubeHistory = (url) => {
     if (!youtubeHistory.includes(url)) {
       setYoutubeHistory((prev) => [url, ...prev].slice(0, 5)); // Maksymalnie 5 pozycji
+    }
+  };
+
+  // Dodaj timer do historii
+  const addToTimerHistory = (timer) => {
+    setTimerHistory((prev) => [timer, ...prev].slice(0, 5)); // Maksymalnie 5 pozycji
+  };
+
+  // Dodaj nazwę do historii
+  const addToNameHistory = (name) => {
+    if (!nameHistory.includes(name)) {
+      setNameHistory((prev) => [name, ...prev].slice(0, 5)); // Maksymalnie 5 pozycji
     }
   };
 
@@ -246,11 +276,13 @@ const App = () => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
       setAlarmTime(endTime);
+      addToTimerHistory({ type: 'endTime', value: endTime });
     } else if (customMinutes) {
       const minutes = parseInt(customMinutes, 10);
       if (minutes > 0) {
         setTimeLeft({ minutes, seconds: 0 });
         setAlarmTime(calculateAlarmTime(minutes));
+        addToTimerHistory({ type: 'duration', value: customMinutes });
       }
     }
     setIsRunning(true);
@@ -266,6 +298,13 @@ const App = () => {
     setAlarmTime('');
     setIsEditingName(true);
   }, []);
+
+  // Dodaj nazwę do historii po zatwierdzeniu
+  useEffect(() => {
+    if (!isEditingName) {
+      addToNameHistory(appName);
+    }
+  }, [isEditingName, appName]);
 
   // Motywy kolorystyczne
   const THEMES = {
@@ -446,10 +485,56 @@ const App = () => {
                   }
                 }}
               >
-                <option value="">Wybierz z historii</option>
+                <option value="">Wybierz z historii YouTube</option>
                 {youtubeHistory.map((url, index) => (
                   <option key={index} value={index}>
                     {url}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">{texts.timerHistory}</label>
+              <select
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                onChange={(e) => {
+                  const selectedTimer = timerHistory[e.target.value];
+                  if (selectedTimer) {
+                    if (selectedTimer.type === 'endTime') {
+                      setEndTime(selectedTimer.value);
+                      setCustomMinutes('');
+                    } else if (selectedTimer.type === 'duration') {
+                      setCustomMinutes(selectedTimer.value);
+                      setEndTime('');
+                    }
+                    setShowAdvanced(false);
+                  }
+                }}
+              >
+                <option value="">Wybierz z historii liczników</option>
+                {timerHistory.map((timer, index) => (
+                  <option key={index} value={index}>
+                    {timer.type === 'endTime' ? `End Time: ${timer.value}` : `Duration: ${timer.value} minutes`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">{texts.nameHistory}</label>
+              <select
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                onChange={(e) => {
+                  const selectedName = nameHistory[e.target.value];
+                  if (selectedName) {
+                    setAppName(selectedName);
+                    setShowAdvanced(false);
+                  }
+                }}
+              >
+                <option value="">Wybierz z historii nazw</option>
+                {nameHistory.map((name, index) => (
+                  <option key={index} value={index}>
+                    {name}
                   </option>
                 ))}
               </select>
