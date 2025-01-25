@@ -158,7 +158,8 @@ const App = () => {
         <h1
           className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text p-4"
           style={{
-            textShadow: '0 0 5px #22d3ee, 0 0 10px #22d3ee, 0 0 20px #22d3ee, 0 0 40px #22d3ee',
+            textShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6',
+            animation: 'pulse-neon 1.5s infinite',
           }}
         >
           {appName}
@@ -282,21 +283,49 @@ const App = () => {
         )}
       </div>
 
-      {/* Przycisk przełączający język */}
-      <button
-        onClick={() => setIsEnglish(!isEnglish)}
-        className="fixed bottom-4 left-4 bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400 transition-all duration-300"
-        style={{
-          boxShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6',
-        }}
-      >
-        {isEnglish ? 'PL' : 'ENG'}
-      </button>
+      {/* Przyciski w lewym dolnym rogu */}
+      <div className="fixed bottom-4 left-4 flex gap-2">
+        <button
+          onClick={resetTimer}
+          className="bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
+          style={{
+            boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
+          }}
+        >
+          {texts.reset}
+        </button>
+        <button
+          onClick={() => setIsEnglish(!isEnglish)}
+          className="bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400 transition-all duration-300"
+          style={{
+            boxShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6',
+          }}
+        >
+          {isEnglish ? 'PL' : 'ENG'}
+        </button>
+      </div>
 
       {/* Tekst o ciasteczkach */}
       <footer className="w-full flex justify-center mt-8 text-sm text-cyan-400">
         <p className="text-center">{texts.noCookies}</p>
       </footer>
+
+      {/* Animacja neonowego pulsowania */}
+      <style>
+        {`
+          @keyframes pulse-neon {
+            0% {
+              text-shadow: 0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6;
+            }
+            50% {
+              text-shadow: 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6, 0 0 80px #8b5cf6;
+            }
+            100% {
+              text-shadow: 0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
