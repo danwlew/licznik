@@ -44,6 +44,22 @@ const getYoutubeVideoId = (url: string) => {
   return match ? match[1] : '';
 };
 
+// Funkcja do otwierania wideo w aplikacji YouTube na Androidzie
+const openYoutubeInApp = (videoId: string) => {
+  const appUrl = `vnd.youtube://${videoId}`;
+  const webUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+  // Próbujemy otworzyć wideo w aplikacji
+  window.location.href = appUrl;
+
+  // Jeśli aplikacja nie jest zainstalowana, przekierowujemy do przeglądarki
+  setTimeout(() => {
+    if (!document.hidden) {
+      window.location.href = webUrl;
+    }
+  }, 500); // Czekamy 500 ms na reakcję aplikacji
+};
+
 // Komponent przycisku z animacją
 const AnimatedButton = React.memo(({ onClick, children, color, shadowColor }) => {
   return (
@@ -86,7 +102,7 @@ const App = () => {
     } else if (isMobileDevice()) {
       const videoId = getYoutubeVideoId(youtubeUrl);
       if (videoId) {
-        window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        openYoutubeInApp(videoId); // Używamy funkcji do otwierania w aplikacji
       }
     } else {
       setShowYoutubeVideo(true);
