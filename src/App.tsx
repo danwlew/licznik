@@ -13,7 +13,26 @@ const App = () => {
   const [appName, setAppName] = useState<string>('Cyberpunk Timer'); // Nazwa aplikacji
   const [isEditingName, setIsEditingName] = useState<boolean>(true); // Flaga do edycji nazwy
   const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
+  const [isEnglish, setIsEnglish] = useState<boolean>(true); // Flaga do przełączania języka
   const audioElement = useRef<HTMLAudioElement | null>(null);
+
+  // Teksty w zależności od języka
+  const texts = {
+    appNamePlaceholder: isEnglish ? 'Enter app name' : 'Wpisz nazwę aplikacji',
+    setEndTimeLabel: isEnglish ? 'Set end time (HH:mm)' : 'Ustaw czas zakończenia (HH:mm)',
+    setDurationLabel: isEnglish ? 'Or set duration (minutes)' : 'Lub ustaw czas trwania (minuty)',
+    useDefaultSoundLabel: isEnglish ? 'Use default sound or YouTube' : 'Użyj domyślnego dźwięku lub YouTube',
+    defaultSound: isEnglish ? 'Default Sound' : 'Domyślny dźwięk',
+    youtubeVideo: isEnglish ? 'YouTube Video' : 'Wideo YouTube',
+    youtubeUrlPlaceholder: isEnglish ? 'Enter YouTube video URL' : 'Wpisz URL wideo YouTube',
+    startTimer: isEnglish ? 'Start Timer' : 'Rozpocznij odliczanie',
+    reset: isEnglish ? 'Reset' : 'Resetuj',
+    alarmSetTo: isEnglish ? 'Alarm set to:' : 'Alarm ustawiony na:',
+    closeVideo: isEnglish ? 'Close Video' : 'Zamknij wideo',
+    noCookies: isEnglish
+      ? 'This app does not store cookies or any data on your device.'
+      : 'Ta aplikacja nie przechowuje ciasteczek ani żadnych danych na Twoim urządzeniu.',
+  };
 
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
@@ -131,7 +150,7 @@ const App = () => {
             type="text"
             value={appName}
             onChange={(e) => setAppName(e.target.value)}
-            placeholder="Enter app name"
+            placeholder={texts.appNamePlaceholder}
             className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
             style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
           />
@@ -143,7 +162,7 @@ const App = () => {
         {!isRunning && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Set end time (HH:mm)</label>
+              <label className="block text-sm mb-1">{texts.setEndTimeLabel}</label>
               <input
                 type="time"
                 value={endTime}
@@ -156,7 +175,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Or set duration (minutes)</label>
+              <label className="block text-sm mb-1">{texts.setDurationLabel}</label>
               <input
                 type="number"
                 value={customMinutes}
@@ -164,13 +183,13 @@ const App = () => {
                   setCustomMinutes(e.target.value);
                   setEndTime('');
                 }}
-                placeholder="Enter minutes"
+                placeholder={texts.setDurationLabel}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Use default sound or YouTube</label>
+              <label className="block text-sm mb-1">{texts.useDefaultSoundLabel}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -178,7 +197,7 @@ const App = () => {
                   onChange={(e) => setUseDefaultSound(e.target.checked)}
                   className="w-4 h-4 text-cyan-400 focus:ring-cyan-500 rounded"
                 />
-                <span>{useDefaultSound ? 'Default Sound' : 'YouTube Video'}</span>
+                <span>{useDefaultSound ? texts.defaultSound : texts.youtubeVideo}</span>
               </div>
             </div>
             {!useDefaultSound && (
@@ -188,7 +207,7 @@ const App = () => {
                   type="text"
                   value={youtubeUrl}
                   onChange={(e) => setYoutubeUrl(e.target.value)}
-                  placeholder="Enter YouTube video URL"
+                  placeholder={texts.youtubeUrlPlaceholder}
                   className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                   style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
                 />
@@ -199,14 +218,14 @@ const App = () => {
               disabled={!endTime && !customMinutes}
               className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
             >
-              Start Timer
+              {texts.startTimer}
             </button>
             <div className="mt-4"> {/* Dodano odstęp między przyciskami */}
               <button
                 onClick={resetTimer}
                 className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400"
               >
-                Reset
+                {texts.reset}
               </button>
             </div>
           </div>
@@ -220,7 +239,7 @@ const App = () => {
 
         {isRunning && alarmTime && (
           <p className="mt-4 text-lg">
-            Alarm set to: <span className="font-bold">{alarmTime}</span>
+            {texts.alarmSetTo} <span className="font-bold">{alarmTime}</span>
           </p>
         )}
 
@@ -241,13 +260,22 @@ const App = () => {
               onClick={() => setShowYoutubeVideo(false)}
               className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400"
             >
-              Close Video
+              {texts.closeVideo}
             </button>
           </div>
         )}
       </div>
+
+      {/* Przycisk przełączający język */}
+      <button
+        onClick={() => setIsEnglish(!isEnglish)}
+        className="fixed bottom-4 left-4 bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400"
+      >
+        {isEnglish ? 'PL' : 'ENG'}
+      </button>
+
       <footer className="mt-8 text-sm text-cyan-400">
-        This app does not store cookies or any data on your device.
+        {texts.noCookies}
       </footer>
     </div>
   );
