@@ -49,7 +49,7 @@ const AnimatedButton = React.memo(({ onClick, children, color, shadowColor }) =>
   return (
     <button
       onClick={onClick}
-      className={`px-6 py-2 rounded-lg transition-all duration-300 hover:opacity-90 active:scale-95`}
+      className={`px-6 py-2 rounded-lg transition-all duration-300 hover:opacity-90 active:scale-95 font-bold text-black`}
       style={{
         backgroundColor: color,
         boxShadow: `0 0 5px ${shadowColor}, 0 0 10px ${shadowColor}, 0 0 20px ${shadowColor}`,
