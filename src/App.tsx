@@ -15,6 +15,10 @@ const TEXTS = {
     alarmSetTo: 'Alarm set to:',
     closeVideo: 'Close Video',
     noCookies: 'This app stores some data locally to remember your preferences.',
+    advanced: 'Advanced',
+    additionalSounds: 'Additional Sounds',
+    themes: 'Themes',
+    history: 'History',
   },
   pl: {
     appNamePlaceholder: 'Wpisz nazwę aplikacji',
@@ -29,6 +33,10 @@ const TEXTS = {
     alarmSetTo: 'Alarm ustawiony na:',
     closeVideo: 'Zamknij wideo',
     noCookies: 'Ta aplikacja przechowuje niektóre dane lokalnie, aby zapamiętać Twoje preferencje.',
+    advanced: 'Zaawansowane',
+    additionalSounds: 'Dodatkowe dźwięki',
+    themes: 'Motywy',
+    history: 'Historia',
   },
 };
 
@@ -96,6 +104,10 @@ const App = () => {
   const [isEditingName, setIsEditingName] = useState(true);
   const [alarmTime, setAlarmTime] = useState('');
   const [isEnglish, setIsEnglish] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedSound, setSelectedSound] = useState('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+  const [theme, setTheme] = useState('dark');
+  const [history, setHistory] = useState([]);
   const audioElement = useRef(null);
 
   const texts = TEXTS[isEnglish ? 'en' : 'pl'];
@@ -106,11 +118,15 @@ const App = () => {
     const savedYoutubeUrl = localStorage.getItem('youtubeUrl');
     const savedUseDefaultSound = localStorage.getItem('useDefaultSound');
     const savedIsEnglish = localStorage.getItem('isEnglish');
+    const savedTheme = localStorage.getItem('theme');
+    const savedSelectedSound = localStorage.getItem('selectedSound');
 
     if (savedAppName) setAppName(savedAppName);
     if (savedYoutubeUrl) setYoutubeUrl(savedYoutubeUrl);
     if (savedUseDefaultSound) setUseDefaultSound(savedUseDefaultSound === 'true');
     if (savedIsEnglish) setIsEnglish(savedIsEnglish === 'true');
+    if (savedTheme) setTheme(savedTheme);
+    if (savedSelectedSound) setSelectedSound(savedSelectedSound);
   }, []);
 
   useEffect(() => {
@@ -129,10 +145,19 @@ const App = () => {
     localStorage.setItem('isEnglish', isEnglish);
   }, [isEnglish]);
 
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedSound', selectedSound);
+  }, [selectedSound]);
+
   // Funkcja do odtwarzania alarmu
   const playAlarm = useCallback(() => {
     if (useDefaultSound) {
       if (audioElement.current) {
+        audioElement.current.src = selectedSound;
         audioElement.current.play().catch((err) => console.warn('Error playing sound:', err));
       }
     } else if (isMobileDevice()) {
@@ -143,13 +168,14 @@ const App = () => {
     } else {
       setShowYoutubeVideo(true);
     }
-  }, [useDefaultSound, youtubeUrl]);
+  }, [useDefaultSound, youtubeUrl, selectedSound]);
 
   // Funkcja do obsługi zakończenia odliczania
   const handleTimerEnd = useCallback(() => {
     setIsRunning(false);
     playAlarm();
-  }, [playAlarm]);
+    setHistory((prev) => [{ endTime, customMinutes, alarmTime }, ...prev].slice(0, 5)); // Dodaj do historii
+  }, [playAlarm, endTime, customMinutes, alarmTime]);
 
   // Funkcja obliczająca pozostały czas
   const calculateTimeLeft = useCallback((end) => {
@@ -202,14 +228,14 @@ const App = () => {
 
   // Inicjalizacja dźwięku
   useEffect(() => {
-    audioElement.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audioElement.current = new Audio(selectedSound);
     return () => {
       if (audioElement.current) {
         audioElement.current.pause();
         audioElement.current.currentTime = 0;
       }
     };
-  }, []);
+  }, [selectedSound]);
 
   const startTimer = useCallback(() => {
     if (endTime) {
@@ -236,8 +262,22 @@ const App = () => {
     setIsEditingName(true);
   }, []);
 
+  // Dodatkowe dźwięki
+  const SOUNDS = [
+    { name: 'Default Sound', url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
+    { name: 'Alarm Clock', url: 'https://assets.mixkit.co/active_storage/sfx/1234/1234-preview.mp3' },
+    { name: 'Nature', url: 'https://assets.mixkit.co/active_storage/sfx/5678/5678-preview.mp3' },
+  ];
+
+  // Motywy kolorystyczne
+  const THEMES = {
+    dark: { bg: 'bg-black', text: 'text-cyan-400' },
+    light: { bg: 'bg-white', text: 'text-gray-800' },
+    neon: { bg: 'bg-black', text: 'text-pink-400' },
+  };
+
   return (
-    <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-4">
+    <div className={`min-h-screen ${THEMES[theme].bg} ${THEMES[theme].text} flex flex-col items-center justify-center p-4`}>
       <div className="text-center">
         {isEditingName && (
           <input
@@ -337,7 +377,7 @@ const App = () => {
             <iframe
               width="640"
               height="360"
-              src={`https://www.youtube.com/embed/${getYoutubeVideoId(youtubeUrl)}?autoplay=1&mute=1`}
+              src={`https://www.youtube.com/embed/${getYoutubeVideoId(youtubeUrl)}?autoplay=1`} // Usunięto wyciszenie
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -364,6 +404,13 @@ const App = () => {
           {texts.reset}
         </AnimatedButton>
         <AnimatedButton
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          color="#4ade80"
+          shadowColor="#4ade80"
+        >
+          {texts.advanced}
+        </AnimatedButton>
+        <AnimatedButton
           onClick={() => setIsEnglish(!isEnglish)}
           color="#8b5cf6"
           shadowColor="#8b5cf6"
@@ -371,6 +418,59 @@ const App = () => {
           {isEnglish ? 'PL' : 'ENG'}
         </AnimatedButton>
       </div>
+
+      {/* Panel zaawansowany */}
+      {showAdvanced && (
+        <div className="fixed bottom-20 left-4 right-4 bg-black border-2 border-cyan-400 rounded-lg p-4">
+          <h2 className="text-lg font-bold mb-4">{texts.advanced}</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1">{texts.additionalSounds}</label>
+              <select
+                value={selectedSound}
+                onChange={(e) => setSelectedSound(e.target.value)}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+              >
+                {SOUNDS.map((sound, index) => (
+                  <option key={index} value={sound.url}>{sound.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">{texts.themes}</label>
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+              >
+                {Object.keys(THEMES).map((key) => (
+                  <option key={key} value={key}>{key}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">{texts.history}</label>
+              <div className="space-y-2">
+                {history.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <p>{item.endTime || `${item.customMinutes} minut`}</p>
+                    <button
+                      onClick={() => {
+                        if (item.endTime) setEndTime(item.endTime);
+                        if (item.customMinutes) setCustomMinutes(item.customMinutes);
+                        setShowAdvanced(false);
+                      }}
+                      className="px-2 py-1 bg-cyan-400 text-black rounded"
+                    >
+                      Uruchom ponownie
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tekst o ciasteczkach */}
       <footer className="w-full flex justify-center mt-8 text-sm text-cyan-400">
