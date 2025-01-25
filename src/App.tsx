@@ -38,14 +38,14 @@ const isMobileDevice = () => {
 };
 
 // Funkcja do wyciągania ID wideo z URL YouTube
-const getYoutubeVideoId = (url: string) => {
+const getYoutubeVideoId = (url) => {
   const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const match = url.match(regex);
   return match ? match[1] : '';
 };
 
 // Funkcja do otwierania wideo w aplikacji YouTube na Androidzie
-const openYoutubeInApp = (videoId: string) => {
+const openYoutubeInApp = (videoId) => {
   const appUrl = `vnd.youtube://${videoId}`;
   const webUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
@@ -65,10 +65,17 @@ const AnimatedButton = React.memo(({ onClick, children, color, shadowColor }) =>
   return (
     <button
       onClick={onClick}
-      className={`px-6 py-2 rounded-lg transition-all duration-300 hover:opacity-90 active:scale-95 font-bold text-black`}
+      className={`px-6 py-2 rounded-lg transition-all duration-300 font-bold text-black`}
       style={{
         backgroundColor: color,
         boxShadow: `0 0 5px ${shadowColor}, 0 0 10px ${shadowColor}, 0 0 20px ${shadowColor}`,
+        filter: 'brightness(40%)', // Domyślnie ciemniejszy o 60%
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.filter = 'brightness(100%)'; // Rozjaśnij po najechaniu
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.filter = 'brightness(40%)'; // Przywróć ciemniejszy stan
       }}
     >
       {children}
@@ -89,7 +96,7 @@ const App = () => {
   const [isEditingName, setIsEditingName] = useState(true);
   const [alarmTime, setAlarmTime] = useState('');
   const [isEnglish, setIsEnglish] = useState(true);
-  const audioElement = useRef<HTMLAudioElement | null>(null);
+  const audioElement = useRef(null);
 
   const texts = TEXTS[isEnglish ? 'en' : 'pl'];
 
@@ -116,7 +123,7 @@ const App = () => {
   }, [playAlarm]);
 
   // Funkcja obliczająca pozostały czas
-  const calculateTimeLeft = useCallback((end: string) => {
+  const calculateTimeLeft = useCallback((end) => {
     const [endHours, endMinutes] = end.split(':').map(Number);
     const now = new Date();
     const endTime = new Date();
@@ -135,7 +142,7 @@ const App = () => {
   }, []);
 
   // Funkcja obliczająca godzinę alarmu dla niestandardowych minut
-  const calculateAlarmTime = useCallback((durationMinutes: number) => {
+  const calculateAlarmTime = useCallback((durationMinutes) => {
     const now = new Date();
     const alarm = new Date(now.getTime() + durationMinutes * 60 * 1000);
     return alarm.toTimeString().slice(0, 5);
