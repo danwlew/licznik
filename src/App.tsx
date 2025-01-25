@@ -155,7 +155,12 @@ const App = () => {
             style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
           />
         )}
-        <h1 className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text p-4">
+        <h1
+          className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text p-4"
+          style={{
+            textShadow: '0 0 5px #22d3ee, 0 0 10px #22d3ee, 0 0 20px #22d3ee, 0 0 40px #22d3ee',
+          }}
+        >
           {appName}
         </h1>
 
@@ -216,14 +221,20 @@ const App = () => {
             <button
               onClick={startTimer}
               disabled={!endTime && !customMinutes}
-              className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50"
+              className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50 transition-all duration-300"
+              style={{
+                boxShadow: '0 0 5px #22d3ee, 0 0 10px #22d3ee, 0 0 20px #22d3ee',
+              }}
             >
               {texts.startTimer}
             </button>
             <div className="mt-4"> {/* Dodano odstęp między przyciskami */}
               <button
                 onClick={resetTimer}
-                className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400"
+                className="bg-pink-500 text-black px-6 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
+                style={{
+                  boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
+                }}
               >
                 {texts.reset}
               </button>
@@ -258,7 +269,10 @@ const App = () => {
             />
             <button
               onClick={() => setShowYoutubeVideo(false)}
-              className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400"
+              className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
+              style={{
+                boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
+              }}
             >
               {texts.closeVideo}
             </button>
@@ -269,7 +283,10 @@ const App = () => {
       {/* Przycisk przełączający język */}
       <button
         onClick={() => setIsEnglish(!isEnglish)}
-        className="fixed bottom-4 left-4 bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400"
+        className="fixed bottom-4 left-4 bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400 transition-all duration-300"
+        style={{
+          boxShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6',
+        }}
       >
         {isEnglish ? 'PL' : 'ENG'}
       </button>
