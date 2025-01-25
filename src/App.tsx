@@ -322,7 +322,7 @@ const App = () => {
             value={appName}
             onChange={(e) => setAppName(e.target.value)}
             placeholder={texts.appNamePlaceholder}
-            className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
+            className={`w-full max-w-md ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl`}
             style={{ width: '300px', height: '50px' }}
           />
         )}
@@ -347,7 +347,7 @@ const App = () => {
                   setEndTime(e.target.value);
                   setCustomMinutes('');
                 }}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                 style={{ width: '300px', height: '50px' }}
               />
             </div>
@@ -361,7 +361,7 @@ const App = () => {
                   setEndTime('');
                 }}
                 placeholder={texts.setDurationLabel}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                 style={{ width: '300px', height: '50px' }}
               />
             </div>
@@ -382,7 +382,7 @@ const App = () => {
                   value={youtubeUrl}
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   placeholder={texts.youtubeUrlPlaceholder}
-                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                  className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                   style={{ width: '300px', height: '50px' }}
                 />
               </div>
@@ -458,7 +458,7 @@ const App = () => {
 
       {/* Panel zaawansowany */}
       {showAdvanced && (
-        <div className="fixed bottom-20 left-4 right-4 bg-black border-2 border-cyan-400 rounded-lg p-4">
+        <div className={`fixed bottom-20 left-4 right-4 ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-4`}>
           <h2 className="text-lg font-bold mb-4">{texts.advanced}</h2>
           <div className="space-y-4">
             <div>
@@ -466,7 +466,7 @@ const App = () => {
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
               >
                 {Object.keys(THEMES).map((key) => (
                   <option key={key} value={key}>{key}</option>
@@ -476,7 +476,7 @@ const App = () => {
             <div>
               <label className="block text-sm mb-1">{texts.history}</label>
               <select
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                 onChange={(e) => {
                   const selectedUrl = youtubeHistory[e.target.value];
                   if (selectedUrl) {
@@ -496,7 +496,7 @@ const App = () => {
             <div>
               <label className="block text-sm mb-1">{texts.timerHistory}</label>
               <select
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                 onChange={(e) => {
                   const selectedTimer = timerHistory[e.target.value];
                   if (selectedTimer) {
@@ -522,7 +522,7 @@ const App = () => {
             <div>
               <label className="block text-sm mb-1">{texts.nameHistory}</label>
               <select
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
                 onChange={(e) => {
                   const selectedName = nameHistory[e.target.value];
                   if (selectedName) {
