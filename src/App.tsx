@@ -1,72 +1,106 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+// Stałe tekstowe w zależności od języka
+const TEXTS = {
+  en: {
+    appNamePlaceholder: 'Enter app name',
+    setEndTimeLabel: 'Set end time (HH:mm)',
+    setDurationLabel: 'Or set duration (minutes)',
+    useDefaultSoundLabel: 'Use default sound or YouTube',
+    defaultSound: 'Default Sound',
+    youtubeVideo: 'YouTube Video',
+    youtubeUrlPlaceholder: 'Enter YouTube video URL',
+    startTimer: 'Start Timer',
+    reset: 'Reset',
+    alarmSetTo: 'Alarm set to:',
+    closeVideo: 'Close Video',
+    noCookies: 'This app does not store cookies or any data on your device.',
+  },
+  pl: {
+    appNamePlaceholder: 'Wpisz nazwę aplikacji',
+    setEndTimeLabel: 'Ustaw czas zakończenia (HH:mm)',
+    setDurationLabel: 'Lub ustaw czas trwania (minuty)',
+    useDefaultSoundLabel: 'Użyj domyślnego dźwięku lub YouTube',
+    defaultSound: 'Domyślny dźwięk',
+    youtubeVideo: 'Wideo YouTube',
+    youtubeUrlPlaceholder: 'Wpisz URL wideo YouTube',
+    startTimer: 'Rozpocznij odliczanie',
+    reset: 'Resetuj',
+    alarmSetTo: 'Alarm ustawiony na:',
+    closeVideo: 'Zamknij wideo',
+    noCookies: 'Ta aplikacja nie przechowuje ciasteczek ani żadnych danych na Twoim urządzeniu.',
+  },
+};
 
 // Funkcja do detekcji urządzeń mobilnych
 const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
-// Komponent aplikacji
+// Funkcja do wyciągania ID wideo z URL YouTube
+const getYoutubeVideoId = (url: string) => {
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : '';
+};
+
+// Komponent przycisku z animacją
+const AnimatedButton = React.memo(({ onClick, children, color, shadowColor }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-6 py-2 rounded-lg transition-all duration-300 hover:opacity-90 active:scale-95`}
+      style={{
+        backgroundColor: color,
+        boxShadow: `0 0 5px ${shadowColor}, 0 0 10px ${shadowColor}, 0 0 20px ${shadowColor}`,
+      }}
+    >
+      {children}
+    </button>
+  );
+});
+
+// Główny komponent aplikacji
 const App = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [endTime, setEndTime] = useState<string>(''); // Godzina zakończenia (HH:mm)
-  const [customMinutes, setCustomMinutes] = useState<string>(''); // Niestandardowy czas w minutach
+  const [endTime, setEndTime] = useState('');
+  const [customMinutes, setCustomMinutes] = useState('');
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
-  const [youtubeUrl, setYoutubeUrl] = useState<string>('https://youtu.be/dQw4w9WgXcQ'); // Domyślny URL do YouTube
-  const [useDefaultSound, setUseDefaultSound] = useState<boolean>(true); // Flaga dla domyślnego dźwięku
-  const [showYoutubeVideo, setShowYoutubeVideo] = useState(false); // Flaga do pokazywania wideo
-  const [appName, setAppName] = useState<string>('Cyberpunk Timer'); // Nazwa aplikacji
-  const [isEditingName, setIsEditingName] = useState<boolean>(true); // Flaga do edycji nazwy
-  const [alarmTime, setAlarmTime] = useState<string>(''); // Rzeczywisty czas zakończenia odliczania
-  const [isEnglish, setIsEnglish] = useState<boolean>(true); // Flaga do przełączania języka
+  const [youtubeUrl, setYoutubeUrl] = useState('https://youtu.be/dQw4w9WgXcQ');
+  const [useDefaultSound, setUseDefaultSound] = useState(true);
+  const [showYoutubeVideo, setShowYoutubeVideo] = useState(false);
+  const [appName, setAppName] = useState('Cyberpunk Timer');
+  const [isEditingName, setIsEditingName] = useState(true);
+  const [alarmTime, setAlarmTime] = useState('');
+  const [isEnglish, setIsEnglish] = useState(true);
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
-  // Teksty w zależności od języka
-  const texts = {
-    appNamePlaceholder: isEnglish ? 'Enter app name' : 'Wpisz nazwę aplikacji',
-    setEndTimeLabel: isEnglish ? 'Set end time (HH:mm)' : 'Ustaw czas zakończenia (HH:mm)',
-    setDurationLabel: isEnglish ? 'Or set duration (minutes)' : 'Lub ustaw czas trwania (minuty)',
-    useDefaultSoundLabel: isEnglish ? 'Use default sound or YouTube' : 'Użyj domyślnego dźwięku lub YouTube',
-    defaultSound: isEnglish ? 'Default Sound' : 'Domyślny dźwięk',
-    youtubeVideo: isEnglish ? 'YouTube Video' : 'Wideo YouTube',
-    youtubeUrlPlaceholder: isEnglish ? 'Enter YouTube video URL' : 'Wpisz URL wideo YouTube',
-    startTimer: isEnglish ? 'Start Timer' : 'Rozpocznij odliczanie',
-    reset: isEnglish ? 'Reset' : 'Resetuj',
-    alarmSetTo: isEnglish ? 'Alarm set to:' : 'Alarm ustawiony na:',
-    closeVideo: isEnglish ? 'Close Video' : 'Zamknij wideo',
-    noCookies: isEnglish
-      ? 'This app does not store cookies or any data on your device.'
-      : 'Ta aplikacja nie przechowuje ciasteczek ani żadnych danych na Twoim urządzeniu.',
-  };
+  const texts = TEXTS[isEnglish ? 'en' : 'pl'];
 
   // Funkcja do odtwarzania alarmu
-  const playAlarm = () => {
+  const playAlarm = useCallback(() => {
     if (useDefaultSound) {
-      // Wymagana interakcja użytkownika przed odtworzeniem dźwięku
       if (audioElement.current) {
         audioElement.current.play().catch((err) => console.warn('Error playing sound:', err));
       }
-    } else {
-      if (isMobileDevice()) {
-        // Przekierowanie do aplikacji YouTube na urządzeniach mobilnych
-        const videoId = getYoutubeVideoId(youtubeUrl);
-        if (videoId) {
-          window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-        }
-      } else {
-        // Otwarcie wideo w przeglądarce na komputerach
-        setShowYoutubeVideo(true);
+    } else if (isMobileDevice()) {
+      const videoId = getYoutubeVideoId(youtubeUrl);
+      if (videoId) {
+        window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
       }
+    } else {
+      setShowYoutubeVideo(true);
     }
-  };
+  }, [useDefaultSound, youtubeUrl]);
 
   // Funkcja do obsługi zakończenia odliczania
-  const handleTimerEnd = () => {
+  const handleTimerEnd = useCallback(() => {
     setIsRunning(false);
     playAlarm();
-  };
+  }, [playAlarm]);
 
   // Funkcja obliczająca pozostały czas
-  const calculateTimeLeft = (end: string) => {
+  const calculateTimeLeft = useCallback((end: string) => {
     const [endHours, endMinutes] = end.split(':').map(Number);
     const now = new Date();
     const endTime = new Date();
@@ -74,7 +108,7 @@ const App = () => {
     endTime.setHours(endHours, endMinutes, 0, 0);
 
     if (endTime < now) {
-      endTime.setDate(endTime.getDate() + 1); // Jeśli czas zakończenia jest w przeszłości, ustaw na następny dzień
+      endTime.setDate(endTime.getDate() + 1);
     }
 
     const diff = endTime.getTime() - now.getTime();
@@ -82,14 +116,14 @@ const App = () => {
       minutes: Math.floor(diff / (1000 * 60)),
       seconds: Math.floor((diff % (1000 * 60)) / 1000),
     };
-  };
+  }, []);
 
   // Funkcja obliczająca godzinę alarmu dla niestandardowych minut
-  const calculateAlarmTime = (durationMinutes: number) => {
+  const calculateAlarmTime = useCallback((durationMinutes: number) => {
     const now = new Date();
     const alarm = new Date(now.getTime() + durationMinutes * 60 * 1000);
-    return alarm.toTimeString().slice(0, 5); // Zwraca "HH:mm"
-  };
+    return alarm.toTimeString().slice(0, 5);
+  }, []);
 
   // Obsługa logiki odliczania
   useEffect(() => {
@@ -112,7 +146,7 @@ const App = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, endTime, timeLeft]);
+  }, [isRunning, endTime, timeLeft, calculateTimeLeft, handleTimerEnd]);
 
   // Inicjalizacja dźwięku
   useEffect(() => {
@@ -125,7 +159,7 @@ const App = () => {
     };
   }, []);
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     if (endTime) {
       setTimeLeft(calculateTimeLeft(endTime));
       setAlarmTime(endTime);
@@ -138,9 +172,9 @@ const App = () => {
     }
     setIsRunning(true);
     setIsEditingName(false);
-  };
+  }, [endTime, customMinutes, calculateTimeLeft, calculateAlarmTime]);
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     setIsRunning(false);
     setEndTime('');
     setCustomMinutes('');
@@ -148,14 +182,7 @@ const App = () => {
     setShowYoutubeVideo(false);
     setAlarmTime('');
     setIsEditingName(true);
-  };
-
-  // Funkcja do wyciągania ID wideo z URL YouTube
-  const getYoutubeVideoId = (url: string) => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : '';
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-4">
@@ -167,7 +194,7 @@ const App = () => {
             onChange={(e) => setAppName(e.target.value)}
             placeholder={texts.appNamePlaceholder}
             className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
-            style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
+            style={{ width: '300px', height: '50px' }}
           />
         )}
         <h1
@@ -192,7 +219,7 @@ const App = () => {
                   setCustomMinutes('');
                 }}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-                style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
+                style={{ width: '300px', height: '50px' }}
               />
             </div>
             <div>
@@ -206,7 +233,7 @@ const App = () => {
                 }}
                 placeholder={texts.setDurationLabel}
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-                style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
+                style={{ width: '300px', height: '50px' }}
               />
             </div>
             <div className="flex items-center justify-center gap-2">
@@ -227,20 +254,17 @@ const App = () => {
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   placeholder={texts.youtubeUrlPlaceholder}
                   className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-                  style={{ width: '300px', height: '50px' }} // Powiększenie pola tekstowego
+                  style={{ width: '300px', height: '50px' }}
                 />
               </div>
             )}
-            <button
+            <AnimatedButton
               onClick={startTimer}
-              disabled={!endTime && !customMinutes}
-              className="bg-cyan-400 text-black px-6 py-2 rounded-lg hover:bg-cyan-300 disabled:opacity-50 transition-all duration-300"
-              style={{
-                boxShadow: '0 0 5px #22d3ee, 0 0 10px #22d3ee, 0 0 20px #22d3ee',
-              }}
+              color="#22d3ee"
+              shadowColor="#22d3ee"
             >
               {texts.startTimer}
-            </button>
+            </AnimatedButton>
           </div>
         )}
 
@@ -267,39 +291,33 @@ const App = () => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
-            <button
+            <AnimatedButton
               onClick={() => setShowYoutubeVideo(false)}
-              className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
-              style={{
-                boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
-              }}
+              color="#ec4899"
+              shadowColor="#ec4899"
             >
               {texts.closeVideo}
-            </button>
+            </AnimatedButton>
           </div>
         )}
       </div>
 
       {/* Przyciski w lewym dolnym rogu */}
       <div className="fixed bottom-4 left-4 right-4 flex justify-between">
-        <button
+        <AnimatedButton
           onClick={resetTimer}
-          className="bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
-          style={{
-            boxShadow: '0 0 5px #ec4899, 0 0 10px #ec4899, 0 0 20px #ec4899',
-          }}
+          color="#ec4899"
+          shadowColor="#ec4899"
         >
           {texts.reset}
-        </button>
-        <button
+        </AnimatedButton>
+        <AnimatedButton
           onClick={() => setIsEnglish(!isEnglish)}
-          className="bg-purple-500 text-black px-4 py-2 rounded-lg hover:bg-purple-400 transition-all duration-300"
-          style={{
-            boxShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6',
-          }}
+          color="#8b5cf6"
+          shadowColor="#8b5cf6"
         >
           {isEnglish ? 'PL' : 'ENG'}
-        </button>
+        </AnimatedButton>
       </div>
 
       {/* Tekst o ciasteczkach */}
