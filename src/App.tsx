@@ -107,7 +107,6 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState('');
   const [isEnglish, setIsEnglish] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [theme, setTheme] = useState('dark');
   const [youtubeHistory, setYoutubeHistory] = useState([]);
   const [timerHistory, setTimerHistory] = useState([]);
   const [nameHistory, setNameHistory] = useState([]);
@@ -121,7 +120,6 @@ const App = () => {
     const savedYoutubeUrl = localStorage.getItem('youtubeUrl');
     const savedUseDefaultSound = localStorage.getItem('useDefaultSound');
     const savedIsEnglish = localStorage.getItem('isEnglish');
-    const savedTheme = localStorage.getItem('theme');
     const savedYoutubeHistory = localStorage.getItem('youtubeHistory');
     const savedTimerHistory = localStorage.getItem('timerHistory');
     const savedNameHistory = localStorage.getItem('nameHistory');
@@ -130,7 +128,6 @@ const App = () => {
     if (savedYoutubeUrl) setYoutubeUrl(savedYoutubeUrl);
     if (savedUseDefaultSound) setUseDefaultSound(savedUseDefaultSound === 'true');
     if (savedIsEnglish) setIsEnglish(savedIsEnglish === 'true');
-    if (savedTheme) setTheme(savedTheme);
     if (savedYoutubeHistory) setYoutubeHistory(JSON.parse(savedYoutubeHistory));
     if (savedTimerHistory) setTimerHistory(JSON.parse(savedTimerHistory));
     if (savedNameHistory) setNameHistory(JSON.parse(savedNameHistory));
@@ -151,10 +148,6 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem('isEnglish', isEnglish);
   }, [isEnglish]);
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem('youtubeHistory', JSON.stringify(youtubeHistory));
@@ -306,15 +299,8 @@ const App = () => {
     }
   }, [isEditingName, appName]);
 
-  // Motywy kolorystyczne
-  const THEMES = {
-    dark: { bg: 'bg-black', text: 'text-cyan-400' },
-    light: { bg: 'bg-[#fff8e7]', text: 'text-[#5a4a3a]' }, // Delikatny odcień żółtego
-    neon: { bg: 'bg-black', text: 'text-pink-400' },
-  };
-
   return (
-    <div className={`min-h-screen ${THEMES[theme].bg} ${THEMES[theme].text} flex flex-col items-center justify-center p-4`}>
+    <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-4">
       <div className="text-center">
         {isEditingName && (
           <input
@@ -322,7 +308,7 @@ const App = () => {
             value={appName}
             onChange={(e) => setAppName(e.target.value)}
             placeholder={texts.appNamePlaceholder}
-            className={`w-full max-w-md ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl`}
+            className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
             style={{ width: '300px', height: '50px' }}
           />
         )}
@@ -347,7 +333,7 @@ const App = () => {
                   setEndTime(e.target.value);
                   setCustomMinutes('');
                 }}
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 style={{ width: '300px', height: '50px' }}
               />
             </div>
@@ -361,7 +347,7 @@ const App = () => {
                   setEndTime('');
                 }}
                 placeholder={texts.setDurationLabel}
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 style={{ width: '300px', height: '50px' }}
               />
             </div>
@@ -382,7 +368,7 @@ const App = () => {
                   value={youtubeUrl}
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   placeholder={texts.youtubeUrlPlaceholder}
-                  className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                  className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                   style={{ width: '300px', height: '50px' }}
                 />
               </div>
@@ -458,25 +444,13 @@ const App = () => {
 
       {/* Panel zaawansowany */}
       {showAdvanced && (
-        <div className={`fixed bottom-20 left-4 right-4 ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-4`}>
+        <div className="fixed bottom-20 left-4 right-4 bg-black border-2 border-cyan-400 rounded-lg p-4">
           <h2 className="text-lg font-bold mb-4">{texts.advanced}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">{texts.themes}</label>
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
-              >
-                {Object.keys(THEMES).map((key) => (
-                  <option key={key} value={key}>{key}</option>
-                ))}
-              </select>
-            </div>
-            <div>
               <label className="block text-sm mb-1">{texts.history}</label>
               <select
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 onChange={(e) => {
                   const selectedUrl = youtubeHistory[e.target.value];
                   if (selectedUrl) {
@@ -496,7 +470,7 @@ const App = () => {
             <div>
               <label className="block text-sm mb-1">{texts.timerHistory}</label>
               <select
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 onChange={(e) => {
                   const selectedTimer = timerHistory[e.target.value];
                   if (selectedTimer) {
@@ -522,7 +496,7 @@ const App = () => {
             <div>
               <label className="block text-sm mb-1">{texts.nameHistory}</label>
               <select
-                className={`w-full ${THEMES[theme].bg} border-2 border-cyan-400 rounded-lg p-2 ${THEMES[theme].text} placeholder-cyan-700 focus:outline-none focus:border-purple-500`}
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 onChange={(e) => {
                   const selectedName = nameHistory[e.target.value];
                   if (selectedName) {
