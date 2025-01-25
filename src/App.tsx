@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import YouTube from 'react-youtube';
+
+// Funkcja do detekcji urządzeń mobilnych
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
 
 // Komponent aplikacji
 const App = () => {
@@ -37,9 +41,21 @@ const App = () => {
   // Funkcja do odtwarzania alarmu
   const playAlarm = () => {
     if (useDefaultSound) {
-      audioElement.current?.play().catch((err) => console.warn('Error playing sound:', err));
+      // Wymagana interakcja użytkownika przed odtworzeniem dźwięku
+      if (audioElement.current) {
+        audioElement.current.play().catch((err) => console.warn('Error playing sound:', err));
+      }
     } else {
-      setShowYoutubeVideo(true);
+      if (isMobileDevice()) {
+        // Przekierowanie do aplikacji YouTube na urządzeniach mobilnych
+        const videoId = getYoutubeVideoId(youtubeUrl);
+        if (videoId) {
+          window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        }
+      } else {
+        // Otwarcie wideo w przeglądarce na komputerach
+        setShowYoutubeVideo(true);
+      }
     }
   };
 
@@ -121,7 +137,6 @@ const App = () => {
       }
     }
     setIsRunning(true);
-    setShowYoutubeVideo(false);
     setIsEditingName(false);
   };
 
@@ -241,21 +256,17 @@ const App = () => {
           </p>
         )}
 
-        {showYoutubeVideo && (
+        {showYoutubeVideo && !isMobileDevice() && (
           <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center">
-            <YouTube
-              videoId={getYoutubeVideoId(youtubeUrl)}
-              opts={{
-                height: '360',
-                width: '640',
-                playerVars: {
-                  autoplay: 1,
-                  mute: 1, // Wymagane do autoodtwarzania na urządzeniach mobilnych
-                  playsinline: 1, // Odtwarzanie w trybie inline na urządzeniach mobilnych
-                },
-              }}
-              onEnd={resetTimer}
-            />
+            <iframe
+              width="640"
+              height="360"
+              src={`https://www.youtube.com/embed/${getYoutubeVideoId(youtubeUrl)}?autoplay=1&mute=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
             <button
               onClick={() => setShowYoutubeVideo(false)}
               className="mt-4 bg-pink-500 text-black px-4 py-2 rounded-lg hover:bg-pink-400 transition-all duration-300"
