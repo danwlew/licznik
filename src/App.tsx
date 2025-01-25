@@ -14,7 +14,7 @@ const TEXTS = {
     reset: 'Reset',
     alarmSetTo: 'Alarm set to:',
     closeVideo: 'Close Video',
-    noCookies: 'This app does not store cookies or any data on your device.',
+    noCookies: 'This app stores some data locally to remember your preferences.',
   },
   pl: {
     appNamePlaceholder: 'Wpisz nazwę aplikacji',
@@ -28,7 +28,7 @@ const TEXTS = {
     reset: 'Resetuj',
     alarmSetTo: 'Alarm ustawiony na:',
     closeVideo: 'Zamknij wideo',
-    noCookies: 'Ta aplikacja nie przechowuje ciasteczek ani żadnych danych na Twoim urządzeniu.',
+    noCookies: 'Ta aplikacja przechowuje niektóre dane lokalnie, aby zapamiętać Twoje preferencje.',
   },
 };
 
@@ -99,6 +99,35 @@ const App = () => {
   const audioElement = useRef(null);
 
   const texts = TEXTS[isEnglish ? 'en' : 'pl'];
+
+  // Zapisywanie ustawień w localStorage
+  useEffect(() => {
+    const savedAppName = localStorage.getItem('appName');
+    const savedYoutubeUrl = localStorage.getItem('youtubeUrl');
+    const savedUseDefaultSound = localStorage.getItem('useDefaultSound');
+    const savedIsEnglish = localStorage.getItem('isEnglish');
+
+    if (savedAppName) setAppName(savedAppName);
+    if (savedYoutubeUrl) setYoutubeUrl(savedYoutubeUrl);
+    if (savedUseDefaultSound) setUseDefaultSound(savedUseDefaultSound === 'true');
+    if (savedIsEnglish) setIsEnglish(savedIsEnglish === 'true');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('appName', appName);
+  }, [appName]);
+
+  useEffect(() => {
+    localStorage.setItem('youtubeUrl', youtubeUrl);
+  }, [youtubeUrl]);
+
+  useEffect(() => {
+    localStorage.setItem('useDefaultSound', useDefaultSound);
+  }, [useDefaultSound]);
+
+  useEffect(() => {
+    localStorage.setItem('isEnglish', isEnglish);
+  }, [isEnglish]);
 
   // Funkcja do odtwarzania alarmu
   const playAlarm = useCallback(() => {
