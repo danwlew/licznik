@@ -16,9 +16,8 @@ const TEXTS = {
     closeVideo: 'Close Video',
     noCookies: 'This app stores some data locally to remember your preferences.',
     advanced: 'Advanced',
-    additionalSounds: 'Additional Sounds',
     themes: 'Themes',
-    history: 'History',
+    history: 'YouTube History',
   },
   pl: {
     appNamePlaceholder: 'Wpisz nazwę aplikacji',
@@ -34,9 +33,8 @@ const TEXTS = {
     closeVideo: 'Zamknij wideo',
     noCookies: 'Ta aplikacja przechowuje niektóre dane lokalnie, aby zapamiętać Twoje preferencje.',
     advanced: 'Zaawansowane',
-    additionalSounds: 'Dodatkowe dźwięki',
     themes: 'Motywy',
-    history: 'Historia',
+    history: 'Historia YouTube',
   },
 };
 
@@ -105,9 +103,8 @@ const App = () => {
   const [alarmTime, setAlarmTime] = useState('');
   const [isEnglish, setIsEnglish] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedSound, setSelectedSound] = useState('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   const [theme, setTheme] = useState('dark');
-  const [history, setHistory] = useState([]);
+  const [youtubeHistory, setYoutubeHistory] = useState([]);
   const audioElement = useRef(null);
 
   const texts = TEXTS[isEnglish ? 'en' : 'pl'];
@@ -119,14 +116,14 @@ const App = () => {
     const savedUseDefaultSound = localStorage.getItem('useDefaultSound');
     const savedIsEnglish = localStorage.getItem('isEnglish');
     const savedTheme = localStorage.getItem('theme');
-    const savedSelectedSound = localStorage.getItem('selectedSound');
+    const savedYoutubeHistory = localStorage.getItem('youtubeHistory');
 
     if (savedAppName) setAppName(savedAppName);
     if (savedYoutubeUrl) setYoutubeUrl(savedYoutubeUrl);
     if (savedUseDefaultSound) setUseDefaultSound(savedUseDefaultSound === 'true');
     if (savedIsEnglish) setIsEnglish(savedIsEnglish === 'true');
     if (savedTheme) setTheme(savedTheme);
-    if (savedSelectedSound) setSelectedSound(savedSelectedSound);
+    if (savedYoutubeHistory) setYoutubeHistory(JSON.parse(savedYoutubeHistory));
   }, []);
 
   useEffect(() => {
@@ -150,14 +147,20 @@ const App = () => {
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('selectedSound', selectedSound);
-  }, [selectedSound]);
+    localStorage.setItem('youtubeHistory', JSON.stringify(youtubeHistory));
+  }, [youtubeHistory]);
+
+  // Dodaj URL YouTube do historii (bez powtórzeń)
+  const addToYoutubeHistory = (url) => {
+    if (!youtubeHistory.includes(url)) {
+      setYoutubeHistory((prev) => [url, ...prev].slice(0, 5)); // Maksymalnie 5 pozycji
+    }
+  };
 
   // Funkcja do odtwarzania alarmu
   const playAlarm = useCallback(() => {
     if (useDefaultSound) {
       if (audioElement.current) {
-        audioElement.current.src = selectedSound;
         audioElement.current.play().catch((err) => console.warn('Error playing sound:', err));
       }
     } else if (isMobileDevice()) {
@@ -168,14 +171,16 @@ const App = () => {
     } else {
       setShowYoutubeVideo(true);
     }
-  }, [useDefaultSound, youtubeUrl, selectedSound]);
+  }, [useDefaultSound, youtubeUrl]);
 
   // Funkcja do obsługi zakończenia odliczania
   const handleTimerEnd = useCallback(() => {
     setIsRunning(false);
     playAlarm();
-    setHistory((prev) => [{ endTime, customMinutes, alarmTime }, ...prev].slice(0, 5)); // Dodaj do historii
-  }, [playAlarm, endTime, customMinutes, alarmTime]);
+    if (!useDefaultSound) {
+      addToYoutubeHistory(youtubeUrl); // Dodaj URL do historii
+    }
+  }, [playAlarm, useDefaultSound, youtubeUrl]);
 
   // Funkcja obliczająca pozostały czas
   const calculateTimeLeft = useCallback((end) => {
@@ -228,14 +233,14 @@ const App = () => {
 
   // Inicjalizacja dźwięku
   useEffect(() => {
-    audioElement.current = new Audio(selectedSound);
+    audioElement.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     return () => {
       if (audioElement.current) {
         audioElement.current.pause();
         audioElement.current.currentTime = 0;
       }
     };
-  }, [selectedSound]);
+  }, []);
 
   const startTimer = useCallback(() => {
     if (endTime) {
@@ -261,13 +266,6 @@ const App = () => {
     setAlarmTime('');
     setIsEditingName(true);
   }, []);
-
-  // Dodatkowe dźwięki
-  const SOUNDS = [
-    { name: 'Default Sound', url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
-    { name: 'Alarm Clock', url: 'https://assets.mixkit.co/active_storage/sfx/1234/1234-preview.mp3' },
-    { name: 'Nature', url: 'https://assets.mixkit.co/active_storage/sfx/5678/5678-preview.mp3' },
-  ];
 
   // Motywy kolorystyczne
   const THEMES = {
@@ -425,18 +423,6 @@ const App = () => {
           <h2 className="text-lg font-bold mb-4">{texts.advanced}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">{texts.additionalSounds}</label>
-              <select
-                value={selectedSound}
-                onChange={(e) => setSelectedSound(e.target.value)}
-                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
-              >
-                {SOUNDS.map((sound, index) => (
-                  <option key={index} value={sound.url}>{sound.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
               <label className="block text-sm mb-1">{texts.themes}</label>
               <select
                 value={theme}
@@ -453,18 +439,17 @@ const App = () => {
               <select
                 className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
                 onChange={(e) => {
-                  const selected = history[e.target.value];
-                  if (selected) {
-                    if (selected.endTime) setEndTime(selected.endTime);
-                    if (selected.customMinutes) setCustomMinutes(selected.customMinutes);
+                  const selectedUrl = youtubeHistory[e.target.value];
+                  if (selectedUrl) {
+                    setYoutubeUrl(selectedUrl);
                     setShowAdvanced(false);
                   }
                 }}
               >
                 <option value="">Wybierz z historii</option>
-                {history.map((item, index) => (
+                {youtubeHistory.map((url, index) => (
                   <option key={index} value={index}>
-                    {item.endTime || `${item.customMinutes} minut`}
+                    {url}
                   </option>
                 ))}
               </select>
