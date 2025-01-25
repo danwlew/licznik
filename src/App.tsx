@@ -263,6 +263,8 @@ const App = () => {
                 width: '640',
                 playerVars: {
                   autoplay: 1,
+                  mute: 1, // Wymagane do autoodtwarzania na urządzeniach mobilnych
+                  playsinline: 1, // Odtwarzanie w trybie inline na urządzeniach mobilnych
                 },
               }}
               onEnd={resetTimer}
@@ -291,8 +293,9 @@ const App = () => {
         {isEnglish ? 'PL' : 'ENG'}
       </button>
 
-      <footer className="mt-8 text-sm text-cyan-400">
-        {texts.noCookies}
+      {/* Tekst o ciasteczkach */}
+      <footer className="w-full flex justify-center mt-8 text-sm text-cyan-400">
+        <p className="text-center">{texts.noCookies}</p>
       </footer>
     </div>
   );
