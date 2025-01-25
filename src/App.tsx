@@ -20,6 +20,7 @@ const TEXTS = {
     history: 'History',
     timerHistory: 'Timer History',
     nameHistory: 'Name History',
+    clearHistory: 'Clear History',
   },
   pl: {
     appNamePlaceholder: 'Wpisz nazwę aplikacji',
@@ -39,6 +40,7 @@ const TEXTS = {
     history: 'Historia',
     timerHistory: 'Historia Liczników',
     nameHistory: 'Historia Nazw',
+    clearHistory: 'Wyczyść historię',
   },
 };
 
@@ -178,6 +180,16 @@ const App = () => {
     if (!nameHistory.includes(name)) {
       setNameHistory((prev) => [name, ...prev].slice(0, 5)); // Maksymalnie 5 pozycji
     }
+  };
+
+  // Funkcja do czyszczenia historii
+  const clearHistory = () => {
+    setYoutubeHistory([]);
+    setTimerHistory([]);
+    setNameHistory([]);
+    localStorage.removeItem('youtubeHistory');
+    localStorage.removeItem('timerHistory');
+    localStorage.removeItem('nameHistory');
   };
 
   // Funkcja do odtwarzania alarmu
@@ -513,6 +525,14 @@ const App = () => {
                 ))}
               </select>
             </div>
+            {/* Przycisk "Czyść historię" */}
+            <AnimatedButton
+              onClick={clearHistory}
+              color="#f59e0b"
+              shadowColor="#f59e0b"
+            >
+              {texts.clearHistory}
+            </AnimatedButton>
           </div>
         </div>
       )}
