@@ -272,7 +272,7 @@ const App = () => {
   // Motywy kolorystyczne
   const THEMES = {
     dark: { bg: 'bg-black', text: 'text-cyan-400' },
-    light: { bg: 'bg-white', text: 'text-gray-800' },
+    light: { bg: 'bg-[#fff8e7]', text: 'text-[#5a4a3a]' }, // Delikatny odcień żółtego
     neon: { bg: 'bg-black', text: 'text-pink-400' },
   };
 
@@ -450,23 +450,24 @@ const App = () => {
             </div>
             <div>
               <label className="block text-sm mb-1">{texts.history}</label>
-              <div className="space-y-2">
+              <select
+                className="w-full bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500"
+                onChange={(e) => {
+                  const selected = history[e.target.value];
+                  if (selected) {
+                    if (selected.endTime) setEndTime(selected.endTime);
+                    if (selected.customMinutes) setCustomMinutes(selected.customMinutes);
+                    setShowAdvanced(false);
+                  }
+                }}
+              >
+                <option value="">Wybierz z historii</option>
                 {history.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <p>{item.endTime || `${item.customMinutes} minut`}</p>
-                    <button
-                      onClick={() => {
-                        if (item.endTime) setEndTime(item.endTime);
-                        if (item.customMinutes) setCustomMinutes(item.customMinutes);
-                        setShowAdvanced(false);
-                      }}
-                      className="px-2 py-1 bg-cyan-400 text-black rounded"
-                    >
-                      Uruchom ponownie
-                    </button>
-                  </div>
+                  <option key={index} value={index}>
+                    {item.endTime || `${item.customMinutes} minut`}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
           </div>
         </div>
