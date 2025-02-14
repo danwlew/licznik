@@ -314,25 +314,26 @@ const App = () => {
   return (
     <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-4">
       <div className="text-center">
-        {isEditingName && (
-          <input
-            type="text"
-            value={appName}
-            onChange={(e) => setAppName(e.target.value)}
-            placeholder={texts.appNamePlaceholder}
-            className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
-            style={{ width: '300px', height: '50px' }}
-          />
-        )}
-        <h1
-          className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text p-4"
-          style={{
-            textShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6',
-            animation: 'pulse-neon 1.5s infinite',
-          }}
-        >
-          {appName}
-        </h1>
+      {isEditingName && (
+  <textarea
+    value={appName}
+    onChange={(e) => setAppName(e.target.value)}
+    placeholder={texts.appNamePlaceholder}
+    className="w-full max-w-md bg-black border-2 border-cyan-400 rounded-lg p-2 text-cyan-400 placeholder-cyan-700 focus:outline-none focus:border-purple-500 mb-4 text-center text-xl"
+    style={{ width: '300px', height: '100px' }}
+  />
+)}
+<h1
+  className="text-4xl font-bold mb-8 animate-pulse bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-transparent bg-clip-text p-4"
+  style={{
+    whiteSpace: 'pre-wrap',
+    textShadow: '0 0 5px #8b5cf6, 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 40px #8b5cf6',
+    animation: 'pulse-neon 1.5s infinite',
+  }}
+>
+  {appName}
+</h1>
+
 
         {!isRunning && (
           <div className="space-y-4">
